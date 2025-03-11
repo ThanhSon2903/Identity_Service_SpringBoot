@@ -1,0 +1,8 @@
+1.@ControllerAdvice là một Annotation tương tự như @RestControllerAdvice, nhưng thường
+được sử dụng cùng với @ExceptionHandler để can thiệp vào việc xử lý của các Controller
+thông thường.
+    Nếu bạn cần xử lý nhiều exception khác nhau trong controller của mình, bạn có thể sử dụng
+    annotation @ControllerAdvice
+
+2.ResponseEntity là một lớp trong Spring giúp tạo ra một phản hồi HTTP với status
+code và nội dung.

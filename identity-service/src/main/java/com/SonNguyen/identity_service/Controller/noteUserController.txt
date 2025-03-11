@@ -1,0 +1,11 @@
+1.Syntax: @PathVariable(URL) String id
+Annotation này có nhiệm vụ ánh xạ giá trị của biến
+trong URL vào tham số id => id sẽ nhận được giá trị tương ứng với biến trong URL
+
+2.@RestController: Annotation này được init ở lớp Controller để xử lý các Request từ HTTP client
+và return về dưới dạng JSON or XML
+
+3.@RequestMapping: giúp ta chỉ định phương thức nào sẽ xử lý các request với URL
+
+4.@AutoWired
+

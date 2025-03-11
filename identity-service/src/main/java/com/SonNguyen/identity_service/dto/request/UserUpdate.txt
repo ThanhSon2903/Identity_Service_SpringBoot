@@ -1,0 +1,12 @@
+@NoArgsConstructor: Giúp tạo đối tượng rỗng khi bạn không có thông tin cụ thể.
+@AllArgsConstructor: Giúp tạo đối tượng khi bạn có đủ thông tin cho tất cả các thuộc tính.
+@Builder: Tạo đối tượng một cách linh hoạt, dễ đọc, và tránh phải nhớ thứ tự các tham số.
+
+Exemple:
+Person person = Person.builder()
+                        .name("John")
+                        .age(25)
+                        .address("123 Street")
+                        .phoneNumber("1234567890")
+                        .email("john@example.com")
+                        .build();

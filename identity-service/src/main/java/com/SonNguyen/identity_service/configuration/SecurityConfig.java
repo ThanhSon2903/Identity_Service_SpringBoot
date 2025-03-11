@@ -1,0 +1,83 @@
+package com.SonNguyen.identity_service.configuration;
+
+
+import com.SonNguyen.identity_service.enums.Role;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.SecurityFilterChain;
+
+import javax.crypto.spec.SecretKeySpec;
+
+@Slf4j
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private String PUBLIC_ENDPOINT[] = {"/users","/auth/token","/auth/introspect"};
+    @Value("${jwt.signerKey}")
+    private String SIGNER_KEY;
+
+
+    @Bean
+    //Cấu hình này cho phép truy cập ko giới hạn tới các endpoint, sử dụng jwt để xác thực và tắt bảo vê csrf
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        log.info("signerKey"+SIGNER_KEY);
+        //Cấu hình cho phép tất cả yêu cầu POST tới các ENDPOINT được truy cập mà không cần xác thực
+        httpSecurity.authorizeHttpRequests(request -> request
+                .requestMatchers(HttpMethod.POST,PUBLIC_ENDPOINT).permitAll()
+                .requestMatchers(HttpMethod.GET,"/users").hasRole(Role.ADMIN.name())
+                .anyRequest()
+                .authenticated());
+
+        httpSecurity.oauth2ResourceServer(oauth2 ->
+                oauth2.jwt(jwtConfigurer -> jwtConfigurer
+                        .decoder(jwtDecoder())
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+        );
+        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+
+        return httpSecurity.build();
+    }
+    @Bean
+    JwtAuthenticationConverter jwtAuthenticationConverter(){
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+//        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    //Cấu hình việc xác thực và giải mã JWT
+    JwtDecoder jwtDecoder(){
+        //Tạo đối tượng secretKeySpec từ 1 chuỗi SIGNER_KEY và được chuyển thành 1 mảng BYTE.
+        //SIGNER_KEY dùng thuật toan HS512
+        SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNER_KEY.getBytes(),"HS512");
+
+        return NimbusJwtDecoder.withSecretKey(secretKeySpec)
+                .macAlgorithm(MacAlgorithm.HS512)
+                .build();
+    }
+
+    @Bean
+    //BeanInstantiation: Spring sẽ khởi tạo các đối tượng Bean giống như khởi tạo các đối tượng
+        // java thông thường và đưa vào applicationContext
+    PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder(10);
+    }
+}

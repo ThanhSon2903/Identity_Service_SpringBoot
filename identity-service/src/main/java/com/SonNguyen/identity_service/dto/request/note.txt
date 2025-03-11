@@ -1,0 +1,3 @@
+1.@JsonInclude(JsonInclude.Include.NON_NULL): Điều này có nghĩa là các trường có giá trị
+null sẽ không được bao gồm trong JSON khi đối tượng được chuyển đổi thành JSON.
+Ví dụ: Field mesage có giá trị null -> Chúng sẽ ko xuất hiện trong JSON Response
