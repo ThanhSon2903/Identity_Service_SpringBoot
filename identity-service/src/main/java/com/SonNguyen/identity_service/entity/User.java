@@ -1,9 +1,6 @@
 package com.SonNguyen.identity_service.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -17,6 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "user")
 public class User {
 
     @Id
@@ -28,5 +26,7 @@ public class User {
     String firstName;
     String lastName;
     LocalDate date;
+
+    @ElementCollection(fetch = FetchType.EAGER)  // Nếu roles là Set<String>
     Set<String> roles;
 }

@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.StringJoiner;
@@ -83,7 +84,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(// thời điểm token sẽ hết hạn
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                .claim("SCOPE",buildScope(user))
+                .claim("authorities", new ArrayList<>(user.getRoles()))
                 .build();
 
 
@@ -104,22 +105,22 @@ public class AuthenticationService {
     }
 
 
-    private String buildScope(User user){
-        StringJoiner stringJoiner = new StringJoiner(" ");
-        if(!CollectionUtils.isEmpty(user.getRoles())){
-            user.getRoles().forEach(stringJoiner::add);
-        }
-        return stringJoiner.toString();
-    }
+//    private String buildScope(User user){
+//        StringJoiner stringJoiner = new StringJoiner(" ");
+//        if(!CollectionUtils.isEmpty(user.getRoles())){
+//            user.getRoles().forEach(stringJoiner::add);
+//        }
+//        return stringJoiner.toString();
+//    }
 
 
     /*
-    * AuthenticationResponse xác thực khi user đăng nhập vào hệ thống
-    * */
+     * AuthenticationResponse xác thực khi user đăng nhập vào hệ thống
+     * */
     public AuthenticationResponse authentication(AuthenticationRequest authenticationRequest){
         //Kiểm tra tên người dùng có tồn tại ko?
         User user = userRepository.findByUserName(
-                authenticationRequest.getUserName())
+                        authenticationRequest.getUserName())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         //Kiểm tra mật khẩu

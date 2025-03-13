@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -21,6 +22,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -40,7 +44,7 @@ public class SecurityConfig {
         //Cấu hình cho phép tất cả yêu cầu POST tới các ENDPOINT được truy cập mà không cần xác thực
         httpSecurity.authorizeHttpRequests(request -> request
                 .requestMatchers(HttpMethod.POST,PUBLIC_ENDPOINT).permitAll()
-                .requestMatchers(HttpMethod.GET,"/users").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.GET,"/users").hasAuthority("ADMIN")
                 .anyRequest()
                 .authenticated());
 
@@ -54,16 +58,25 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter(){
+    JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-//        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-        return jwtAuthenticationConverter;
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
+
+        return new JwtAuthenticationConverter() {
+            {
+                setJwtGrantedAuthoritiesConverter(jwt -> {
+                    Collection<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
+                    System.out.println("✅ Authorities sau khi convert: " + authorities);
+                    return authorities != null ? new ArrayList<>(authorities) : List.of();
+                });
+            }
+        };
     }
 
+
     @Bean
-    //Cấu hình việc xác thực và giải mã JWT
+        //Cấu hình việc xác thực và giải mã JWT
     JwtDecoder jwtDecoder(){
         //Tạo đối tượng secretKeySpec từ 1 chuỗi SIGNER_KEY và được chuyển thành 1 mảng BYTE.
         //SIGNER_KEY dùng thuật toan HS512
@@ -75,7 +88,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    //BeanInstantiation: Spring sẽ khởi tạo các đối tượng Bean giống như khởi tạo các đối tượng
+        //BeanInstantiation: Spring sẽ khởi tạo các đối tượng Bean giống như khởi tạo các đối tượng
         // java thông thường và đưa vào applicationContext
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(10);

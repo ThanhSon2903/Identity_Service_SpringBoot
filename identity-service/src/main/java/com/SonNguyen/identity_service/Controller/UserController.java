@@ -38,17 +38,27 @@ public class UserController {
     }
 
     @GetMapping
-    public ApiResponse<List<UserResponse>> getUsers() {
+    public ApiResponse<List<UserResponse>>getUsers() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Username:{}", authentication.getName());
+        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
+
+        List<UserResponse> users = userService.getUsers();
+        if (users == null || users.isEmpty()) {
+            System.out.println("⚠️ Không có user nào được trả về!");
+        }
         return ApiResponse.<List<UserResponse>>builder()
-                .result(userService.getUsers())
+                .result(users)
                 .build();
     }
+
     @GetMapping("/debug/token")
     public ResponseEntity<String> checkToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         log.info("Token received: {}", authHeader);
         return ResponseEntity.ok(authHeader != null ? "Token exists" : "Token missing");
     }
+
     @GetMapping("/{userId}")
     public ApiResponse<UserResponse> getUserById(@PathVariable("userId") String id){
         return ApiResponse.<UserResponse>builder()

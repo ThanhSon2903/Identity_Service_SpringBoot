@@ -12,6 +12,16 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://your-issuer.com
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 jwt:
   signerKey: "mMLRlahap6KOndf5VcuV9D94PxsA+MGCToDe76cvF0vouAnWOiviJUmJk4ULd0yp"

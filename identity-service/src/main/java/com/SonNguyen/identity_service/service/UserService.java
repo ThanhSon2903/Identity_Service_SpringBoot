@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -49,7 +50,23 @@ public class UserService {
 
     public List<UserResponse> getUsers() {
         log.info("In method get Users");
-        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+        if(userRepository==null){
+            log.info("❌ userRepository is NULL!");
+            return new ArrayList<>();
+        }
+
+        try{
+            List<User> users = userRepository.findAll();
+            log.info("✅ Fetched users from DB, size: {}", users.size());
+            List<UserResponse> responses = users.stream()
+                    .map(userMapper::toUserResponse)
+                    .toList();
+            log.info("✅ Converted users, size: {}", responses.size());
+            return responses;
+        } catch (Exception e) {
+            log.error("🔥 Error fetching users: ", e);
+            return new ArrayList<>();
+        }
     }
 
 
@@ -67,4 +84,3 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 }
-
