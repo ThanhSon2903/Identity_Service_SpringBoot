@@ -31,9 +31,9 @@ public class AuthenticationController {
 
     @PostMapping("/token")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest){
-            log.info("🔥 Đang xác thực user: {}", authenticationRequest);
-            AuthenticationResponse res = authenticationService.authentication(authenticationRequest);
-            return ApiResponse.<AuthenticationResponse>builder()
+        log.info("🔥 Đang xác thực user: {}", authenticationRequest);
+        AuthenticationResponse res = authenticationService.authentication(authenticationRequest);
+        return ApiResponse.<AuthenticationResponse>builder()
                 .result(res)
                 .build();
     }

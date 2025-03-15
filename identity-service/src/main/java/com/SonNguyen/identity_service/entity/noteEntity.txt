@@ -1,3 +1,12 @@
 1.@Entity: - là một annotation trong Java, thường được sử dụng trong
 Hibernate hoặc JPA (Java Persistence API).
            - Khi 1 class được đánh dấu là một @Entity =>  được ánh xạ thành một bảng trong cơ sở dữ liệu.
+
+2.
+Khi dùng @ElementCollection, Hibernate hiểu rằng roles không phải một bảng quan hệ (@OneToMany) mà chỉ là một tập hợp
+giá trị đơn giản.
+Hibernate sẽ tạo bảng user_roles (mặc định {tên_entity}_{tên_field} → user_roles), trong đó chứa:
+  + user_id (khóa ngoại liên kết user)
+  + roles (cột chứa từng role của user)
+
+ FetchType.EAGER giúp tự động tải roles khi lấy User
