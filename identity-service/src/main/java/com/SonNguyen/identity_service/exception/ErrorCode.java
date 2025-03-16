@@ -1,34 +1,28 @@
 package com.SonNguyen.identity_service.exception;
 
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.jdbc.datasource.init.UncategorizedScriptException;
 
+@Getter
 public enum ErrorCode{
-    USER_EXISTED(1001,"User exists"),
-    User_CreateAccepted(1002,"User create accepted"),
-    USERNAME_INVALID(1003,"Tên đăng nhập của bạn quá ngắn"),
-    PASSWORD_INVALID(1004,"Mật khẩu của bạn quá ngắn"),
-    USER_NOT_EXISTED(1005,"User Not Exists"),
-    UNAUTHENCATED(1006,"Unauthencated")
-    ;
 
-    // USER_EXISTED chính là một enum constant trong kiểu ErrorCode.
-    // Enum constant thường đại diện cho một hằng số hoặc một giá trị không thay đổi
-    // Mỗi enum constant là một đối tượng của kiểu enum mà bạn đã định nghĩa.
+    UNCATEGORIZED_EXCEPTION(9999,"Uncategorized error",HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_KEY(1001,"Uncategorized error",HttpStatus.BAD_REQUEST),
+    USER_EXISTED(1002,"User existed",HttpStatus.BAD_REQUEST),
+    USERNAME_INVALID(1003,"User name must be at least 3 char",HttpStatus.BAD_REQUEST),
+    INVALID_PASSWORD(1004,"Pass word must be at least 3 char",HttpStatus.BAD_REQUEST),
+    USER_NOT_EXISTED(1005,"User not existed",HttpStatus.NOT_FOUND),
+    UNAUTHENTICATED(1006,"Unauthenticated",HttpStatus.UNAUTHORIZED);
 
     private int code;
     private String message;
+    private HttpStatusCode httpStatusCode;
 
-    ErrorCode(int code, String message) {
+    ErrorCode(int code, String message,HttpStatusCode httpStatusCode) {
         this.code = code;
         this.message = message;
-    }
-
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
+        this.httpStatusCode = httpStatusCode;
     }
 }

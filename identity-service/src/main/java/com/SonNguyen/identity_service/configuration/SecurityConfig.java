@@ -2,11 +2,13 @@ package com.SonNguyen.identity_service.configuration;
 
 
 import com.SonNguyen.identity_service.enums.Role;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -40,11 +42,9 @@ public class SecurityConfig {
     @Bean
     //Cấu hình này cho phép truy cập ko giới hạn tới các endpoint, sử dụng jwt để xác thực và tắt bảo vê csrf
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        log.info("signerKey"+SIGNER_KEY);
         //Cấu hình cho phép tất cả yêu cầu POST tới các ENDPOINT được truy cập mà không cần xác thực
         httpSecurity.authorizeHttpRequests(request -> request
                 .requestMatchers(HttpMethod.POST,PUBLIC_ENDPOINT).permitAll()
-                .requestMatchers(HttpMethod.GET,"/users").hasAuthority("ADMIN")
                 .anyRequest()
                 .authenticated());
 
@@ -53,7 +53,19 @@ public class SecurityConfig {
                         .decoder(jwtDecoder())
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
         );
+
+        httpSecurity.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    System.out.println("🚨 Lỗi authentication: " + authException.getMessage());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    System.out.println("🚫 Lỗi phân quyền: " + accessDeniedException.getMessage());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+                })
+        );
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
+        httpSecurity.cors(Customizer.withDefaults());
 
         return httpSecurity.build();
     }

@@ -15,6 +15,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,12 +39,12 @@ public class UserController {
                 .build();
     }
 
+
     @GetMapping
     public ApiResponse<List<UserResponse>>getUsers() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Username:{}", authentication.getName());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("User:{} ", authentication.getName());
         authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-
         List<UserResponse> users = userService.getUsers();
         if (users == null || users.isEmpty()) {
             System.out.println("⚠️ Không có user nào được trả về!");
@@ -63,6 +65,13 @@ public class UserController {
     public ApiResponse<UserResponse> getUserById(@PathVariable("userId") String id){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.findUserById(id))
+                .build();
+    }
+
+    @GetMapping("/myInfo")
+    public ApiResponse<UserResponse> getMyInfo(){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
                 .build();
     }
 
